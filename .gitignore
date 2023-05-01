@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 res/iterations_eheterogeneous_g0.0_pm0.0_mo\[0.865708635554234\]_maxit100000.json
 res/iterations_eheterogeneous_g0.0_pm0.0_mo\[0.2825807341574699\]_maxit100000.json
+res/iterations_*
+plots/
