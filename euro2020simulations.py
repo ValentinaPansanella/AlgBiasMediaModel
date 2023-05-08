@@ -65,7 +65,7 @@ media_opinions = [[], [avg_pros], [avg_pros, avg_cons], [avg_pros, avg_neut, avg
 max_it = 100000
 
 for k in [1, 2, 3]:
-    gammas, pms, media_op = [0.0, 0.5, 1.0, 1.5], [0.0, 0.5], media_opinions[k]
+    gammas, pms, media_op = [1.5, 1.0, 0.5, 0.0], [0.5], media_opinions[k]
     #perform multiple runs and average results
     for gamma in gammas:
         for pm in pms:
@@ -100,10 +100,7 @@ for k in [1, 2, 3]:
                     model.set_media_opinions(media_op)
 
                     #perform iterations untill convergence
-                    iterations = model.steady_state(max_iterations=max_it, nsteady=3000, sensibility=0.001, node_status=True, progress_bar=True)
-
-                    with open(respath+f'iterations_{name}_maxit{max_it}.json', 'w') as ofile:
-                        json.dump(iterations, ofile)
+                    iterations = model.steady_state(max_iterations=max_it, nsteady=500, sensibility=0.001, node_status=True, progress_bar=True)
 
                     finalopinions = iterations[-1]['status']
                     niter = int(iterations[-1]['iteration'])
