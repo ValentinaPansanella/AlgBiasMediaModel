@@ -60,12 +60,12 @@ from aggregate import *
 from plots import *
 
 # Model settings
-media_opinions = [[avg_pros], [avg_cons], [avg_neut]]
+media_opinions = [[avg_cons], [avg_neut]]
 print(media_opinions)
 
 max_it = 100000
     
-gammas, pms, epsilons = [1.5, 1.0, 1.5, 0.0], [0.5, 0.0], [0.2, 0.3, 0.4]
+gammas, pms, epsilons = [1.5, 0.0], [0.5, 0.0], [0.2, 0.3, 0.4]
 
 #perform multiple runs and average results
 for media_op in media_opinions:
@@ -121,8 +121,6 @@ for media_op in media_opinions:
                     to_write = {reversemapping[k]: v for k, v in finalopinions.items()}
 
                     write_dicts(respath, name, max_it, to_write)
-
-
 
 
 
