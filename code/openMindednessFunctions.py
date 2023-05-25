@@ -7,11 +7,11 @@ import json
 import pickle
 import csv
 
-def create_dictionaries(timestamps, dataset_name='euro2020'):
+def create_dictionaries(timestamps, dataset_name='dataset'):
     t2node2opinions = dict()
     for t in timestamps.keys():
         t2node2opinions[t] = dict()
-        filename = f'{dataset_name}_{timestamps[t]}.json'
+        filename = f'euro2020_{timestamps[t]}.json'
         with open(f'{dataset_name}/{filename}', 'r') as f:
             node2op = json.load(f)
             for k, v in node2op.items():
@@ -30,7 +30,7 @@ def sortNeighOps(g, v, t, t2node2opinions, opvt):
 
 def createGraph(dataset_name, timestamps, t):
     g = nx.Graph()
-    filename = f'{dataset_name}_edgelist.csv'
+    filename = f'euro2020_edgelist.csv'
     with open(dataset_name+'/'+filename, 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         # the below statement will skip the first row

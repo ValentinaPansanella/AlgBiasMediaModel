@@ -1,41 +1,23 @@
-from matplotlib.colors import LinearSegmentedColormap
-import matplotlib.pyplot as plt
-import seaborn as sns
-import future.utils
 import numpy as np
 import ndlib.models.ModelConfig as mc
 import ndlib.models.opinions as op
 import networkx as nx
-import os
 import json
-import gzip
-from scipy import stats
+from utils import *
+from aggregate import *
+from plots import *
+import csv
 
-g = nx.read_edgelist('euro2020/euro2020_edgelist.csv', delimiter=',', nodetype=str, )
+g = nx.read_edgelist('../dataset/euro2020_edgelist.csv', delimiter=',', nodetype=str)
 
-mapping = dict()
-i = 0
-for nodename in g.nodes():
-    mapping[nodename] = i
-    i+=1
+graph = nx.relabel_nodes(g, mapping={n:int(n) for n in list(g.nodes)}, copy=True)
 
-with open('euro2020/node_mapping.json', 'w') as f:
-    json.dump(mapping, f)
-
-reversemapping = {v: k for k, v in mapping.items()}
-
-graph = nx.relabel_nodes(g, mapping)
-
-with open('euro2020/euro2020_t0.json', 'r') as f:
+with open('../dataset/euro2020_t0.json', 'r') as f:
     nodelist = json.load(f)
 
 nodes = {}
 for k, v in nodelist.items():
-    try:
-        nodes[mapping[k]] = float(v)
-    except KeyError:
-        # print(f'node {k} not present in graph')
-        continue
+    nodes[int(k)] = float(v)
 
 pros = {k:v for k,v in nodes.items() if v <= 0.4}
 avg_pros = np.average(np.array(list(pros.values())))
@@ -44,83 +26,74 @@ avg_cons = np.average(np.array(list(cons.values())))
 neut = {k:v for k,v in nodes.items() if v < 0.6 and v > 0.4}
 avg_neut = np.average(np.array(list(neut.values())))
 
-import csv
 openmindedness = {}
-with open('euro2020/euro2020_openMindedness.csv', 'r') as f:
+with open('../res/euro2020_openMindedness.csv', 'r') as f:
     csv_reader = csv.reader(f)
     next(csv_reader)
     for row in csv_reader:
-        try:
-            openmindedness[mapping[row[1]]] = float(row[2])
-        except KeyError:
-            # print('node not present in graph')
-            continue
-from utils import *
-from aggregate import *
-from plots import *
+        openmindedness[int(row[0])] = float(row[1])
 
 # Model settings
-media_opinions = [[avg_cons], [avg_neut]]
-print(media_opinions)
-
-max_it = 100000
-    
-gammas, pms, epsilons = [1.5, 0.0], [0.5, 0.0], [0.2, 0.3, 0.4]
+media_opinions = [[avg_pros], [avg_cons], [avg_neut], [avg_pros, avg_cons], [avg_pros, avg_cons, avg_neut]]
+max_it = 100
+gammas, pms, epsilons = [0.0, 0.5, 1.0, 1.5], [0.1], [0.2, 0.3, 0.4, 'heterogeneous']
 
 #perform multiple runs and average results
 for media_op in media_opinions:
     k = len(media_op)
     for gamma in gammas:
         for pm in pms:
-            epsilon = 'heterogeneous'
-            respath = 'res/'
-            media = "media" if pm == 0.5 else "nomedia"
-            if media == 'media':
-                if media_op[0] == avg_pros: 
-                    mo='avg_pros'
-                elif media_op[0] == avg_cons:
-                    mo='avg_cons'
-                elif media_op[0] == avg_neut:
-                    mo='avg_neut'
-                name = f'{epsilon}_g{gamma}_{media}_{mo}'
-            elif media == 'nomedia':
-                name = f'{epsilon}_g{gamma}_{media}'
+            for epsilon in epsilons:
+                respath = '../res/'
+                media = "media" if pm == 0.5 else "nomedia"
+                if media == 'media':
+                    if media_op[0] == avg_pros: 
+                        mo='avg_pros'
+                    elif media_op[0] == avg_cons:
+                        mo='avg_cons'
+                    elif media_op[0] == avg_neut:
+                        mo='avg_neut'
+                    name = f'{epsilon}_g{gamma}_{media}_{mo}'
+                elif media == 'nomedia':
+                    name = f'{epsilon}_g{gamma}_{media}'
 
-            final_opinions = read_dicts(respath, name)
+                final_opinions, final_niter = read_dicts(respath, name)
 
-            for run in range(1):
-                if str(run) in final_opinions.keys(): 
-                    print('run already present. skipping.')
-                    run += 1
-                else:
-                    print(f'run {name}')    
+                for run in range(1):
+                    if str(run) in final_opinions.keys(): 
+                        print(f'run {run} already present. skipping.')
+                        run += 1
+                    else:
+                        print(f'run {run} {name}')    
 
-                    #create model
-                    model = op.AlgorithmicBiasMediaModel(graph)
+                        #create model
+                        model = op.AlgorithmicBiasMediaModel(graph)
 
-                    #create configuration
-                    config = mc.Configuration()
-                    config.add_model_parameter("mu", 0.5)
-                    config.add_model_parameter("gamma", gamma)
-                    config.add_model_parameter("gamma_media", gamma)
-                    config.add_model_parameter("p", pm)
-                    config.add_model_parameter("k", k)
+                        #create configuration
+                        config = mc.Configuration()
+                        config.add_model_parameter("mu", 0.5)
+                        config.add_model_parameter("gamma", gamma)
+                        config.add_model_parameter("gamma_media", gamma)
+                        config.add_model_parameter("p", pm)
+                        config.add_model_parameter("k", k)
 
-                    for node in list(graph.nodes):
-                        config.add_node_configuration("epsilon_node", node, float(openmindedness[node]))
+                        if epsilon == 'heterogeneous':
+                            for node in list(graph.nodes):
+                                config.add_node_configuration("epsilon_node", node, float(openmindedness[node]))
+                        else:
+                            config.add_model_parameter("epsilon", epsilon)
 
-                    #configure model
-                    model.set_initial_status(configuration=config, initial_status=nodes)
-                    model.set_media_opinions(media_op)
+                        #configure model
+                        model.set_initial_status(configuration=config, initial_status=nodes)
+                        model.set_media_opinions(media_op)
 
-                    #perform iterations untill convergence
-                    iterations = model.steady_state(max_iterations=max_it, nsteady=500, sensibility=0.001, node_status=True, progress_bar=True)
+                        #perform iterations untill convergence
+                        iterations = model.steady_state(max_iterations=max_it, nsteady=500, sensibility=0.01, node_status=True, progress_bar=True)
+                        
+                        final_opinions[run] = iterations[-1]['status']
+                        final_niter[run] = iterations[-1]['iteration']
 
-                    finalopinions = iterations[-1]['status']
-                    
-                    to_write = {reversemapping[k]: v for k, v in finalopinions.items()}
-
-                    write_dicts(respath, name, max_it, to_write)
+                        write_dicts(respath, name, final_opinions, final_niter)
 
 
 

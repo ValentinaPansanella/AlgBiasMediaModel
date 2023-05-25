@@ -4,6 +4,12 @@ import seaborn as sns
 import future.utils
 import numpy as np
 
+plt.rcParams['axes.facecolor']='white'
+plt.rcParams['savefig.facecolor']='white'
+sns.set_style("whitegrid")
+plt.rcParams.update({'font.size': 11, 'font.style': 'normal', 'font.family':'serif'})
+
+
 def hex_to_rgb(value):
     '''
     Converts hex to rgb colours
@@ -50,9 +56,7 @@ spaghetti_hex_list = ['#357db0', '#18A558', '#ce2626']
 spaghetti_cmap=get_continuous_cmap(spaghetti_hex_list)
 
 
-def plotevolution(iterations, name, run, path='../plots/', figsize=(7,5), dpi=300):
-
-    print('plotting opinion evolution')
+def plotevolution(iterations, name=None, run=None, path='../plots/', figsize=(7,5), dpi=300, facecolor='white'):
     
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
 
@@ -103,14 +107,23 @@ def plotevolution(iterations, name, run, path='../plots/', figsize=(7,5), dpi=30
         x = list(range(0, last_seen[k]))
         y = l[0:last_seen[k]]
         ax.plot(x, y, lw=1.5, alpha=0.5, color=node2col[k])
+    ax.set_facecolor(facecolor)
     plt.tight_layout()
-    plt.savefig(f'{path}/opinion_evolution_{name}_run{run}.png', bbox_inches='tight')
+    
+    if name:
+        plt.savefig(f'{path}/opinion_evolution_{name}_run{run}.png', bbox_inches='tight', facecolor='white')
+    else:
+        plt.show()
     plt.close()
 
-def plotdistribution(finalopinions, name, run, path='../plots/', figsize=(7, 5), dpi=300):
+def plotdistribution(finalopinions, name=None, run=None, path='../plots/', figsize=(7, 5), dpi=300, facecolor='white'):
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
     sns.scatterplot(x = [i for i in range(len(finalopinions))], y=sorted(finalopinions), ax=ax)
+    ax.set_facecolor(facecolor)
     plt.ylim(-0.05, 1.05)
-    plt.savefig(f'{path}/final_opinions_{name}_run{run}.png', bbox_inches='tight')
+    if name:
+        plt.savefig(f'{path}/final_opinions_{name}_run{run}.png', bbox_inches='tight', facecolor=facecolor)
+    else:
+        plt.show()
     plt.close()
 

@@ -1,8 +1,6 @@
 from utils import *
 import json
-import gzip
 import aggregateMetrics as am
-import sys
 
 def aggregate(max_iterations=100000):
     if not os.path.exists("../aggregate/"):
