@@ -16,9 +16,58 @@ pip install ndlib
 ```
 In the ```code``` folder you can find ```simulation_example.ipynb``` with the pipeline to reproduce this work. 
 
+You need to **create a graph representing your simulation population**
+```python
+graph = nx.complete_graph(250)
+```
 
+**Set up model parameters**
+```python
+mu = 0.5
+epsilon = 0.3
+gamma = 1.0
+gamma_media = gamma
+pm = 0.5
+k = 3
+media_op = [0.05, 0.5, 0.95]
+```
 
+**Set up simulation parameters**
+```python
+max_iterations = 1000
+sensibility = 0.00001
+nsteady = 1000
+nodeStatus = True
+progressBar = True
+drop_evolution = False
+```
 
+**Create model**
+```python
+model = op.AlgorithmicBiasMediaModel(graph)
+```
+
+**Create configuration**
+```python
+config = mc.Configuration()
+config.add_model_parameter("mu", mu)
+config.add_model_parameter("epsilon", epsilon)
+config.add_model_parameter("gamma", gamma)
+config.add_model_parameter("gamma_media", gamma)
+config.add_model_parameter("p", pm)
+config.add_model_parameter("k", k)
+```
+
+**Configure model**
+```python
+model.set_initial_status(config)
+model.set_media_opinions(media_op)
+```
+
+**Perform iterations untill convergence (if possible)**
+```python
+iterations = model.steady_state(max_iterations=max_iterations, nsteady=nsteady, sensibility=sensibility, node_status=nodeStatus, progress_bar=progressBar, drop_evolution=False)
+```
 
 
 
