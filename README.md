@@ -76,7 +76,7 @@ model.set_media_opinions(media_op)
 
 **Perform iterations untill convergence (if possible)**
 ```python
-iterations = model.steady_state(max_iterations=max_iterations, nsteady=nsteady, sensibility=sensibility, node_status=nodeStatus, progress_bar=progressBar, drop_evolution=False)
+iterations = model.steady_state(max_iterations=max_iterations, nsteady=nsteady, sensibility=sensibility, node_status=nodeStatus, progress_bar=progressBar, drop_evolution=drop_evolution)
 ```
 
 
