@@ -10,7 +10,7 @@ In this work, we study the effects of the combination of social influence and ma
 We analyzed four different media landscapes and found that an open-minded population is more easily manipulated by external propaganda - moderate or extremist - while remaining undecided in a more balanced information environment. 
 By reinforcing users' biases, recommender systems appear to help avoid the complete manipulation of the population by external propaganda. 
 
-##Opinion Dynamics model description
+## Opinion Dynamics model description
 
 
 After installig NDlib Python Library
